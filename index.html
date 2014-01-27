@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Cute - a smaller Angular</title>
+  
+    <link rel="stylesheet" href="reveal/css/reveal.min.css">
+    <link rel="stylesheet" href="reveal/lib/css/github.css">
+
+    <link rel="stylesheet" href="slides-theme/style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+<section data-markdown class=front><script type="text/template">
+# Cute - a smaller Angular
+
+[@timruffles](http://twitter.com/timruffles)
+[SidekickJS](https://www.sidekickjs.com)
+
+</div>
+
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  - What
+  - Why
+  - How
+  - Design
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## A smaller Angular
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Reading copy of Angular
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## 80/20 edit
+</script></section>
+
+<section>
+ <h2>How big is Angular?</h2>
+
+  <div class='pre small'>
+$ cloc-1.6.0 --by-file ~/angular-1.2.0/angular!(*scen*,*min*|*.css)
+-------------------
+File          code
+-------------------
+angular.js    7730
+mocks.js       806
+animate.js     591
+route.js       260
+sanitize.js    232
+touch.js       231
+resource.js    210
+cookies.js      75
+loader.js       58
+-------------------
+SUM:         10193
+-------------------
+  </div>
+</section>
+
+<section data-markdown><script type="text/template">
+  ## Angular squished into Backbone
+</script></section>
+
+<section >
+ <h2>BB: Unit of measure</h2>
+  <div class=big>
+  
+  <p>Backbone: 937 LOC = 1 BB</p>
+
+  <ul >
+  <li>Ember: 16.7 BB (+ jQuery)</li>
+  <li>Angular: 7.8 BB</li>
+  <li>Cute: 0.6 BB</li>
+  </ul>
+
+</section>
+
+<section>
+ <h2>Comparison</h2>
+
+<div class='pre small'>
+$ cloc  --by-file targets/
+http://cloc.sourceforge.net v 1.60
+-------------------------
+File                code
+-------------------------
+ember-1.3.1.js     15825
+angular.js          7386
+backbone1.1.0.js     937
+-------------------------
+</div>
+</section>
+
+<section>
+ <h2>With cute</h2>
+
+<div class='pre small'>
+$ cloc  --by-file targets/
+http://cloc.sourceforge.net v 1.60
+-------------------------
+File                code
+-------------------------
+ember-1.3.1.js     15825
+angular-1.2.0.js    7386
+backbone1.1.0.js     937
+cute-0.1.js          591
+-------------------------
+</div>
+</section>
+
+<section data-markdown><script type="text/template">
+  ## Cute will stay <= 1 BB
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Why?
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Separate great core idea
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## For learning
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Library?
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## How
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Features to implement
+
+  - compiler
+  - scopes
+  - directives
+  - controllers
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Compiling
+
+  - Identify extensions to DOM
+  - Apply them within a specific scope
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Requirements
+
+  - Recursive
+  - Control recursion - allow `ng-repeat` style abilities
+  - Capture DOM: 'transclusion'
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Stages
+
+  1. For node, find directives
+  1. Apply directives in priority order, stopping if required
+  1. Return a function to link directives to a specific scope
+
+  ### Inside link
+
+  1. Run each directive's linking function
+  1. If compilation hasn't stopped, compile and link children
+
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Scope
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Allows watchers
+
+  ```javascript
+  scope.$watch(someExpressionOrFunction,function(now,was) {
+    // fires when the expression gives a different value
+  })
+  ```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Watcher requirements
+
+  - knows when value changes
+  - storing values
+  - can be a string - compile/interpret
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Angular features
+
+  - deep equality
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Equality in JS
+
+  - HORRIBLE
+  - just edge cases, all the way down
+  - so: shallow equality + `.isEqual(to)`
+  - cheap watch, cheap clone, promotes good code
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Expressions
+
+  ```
+  <div te-style='{selected: s.item.state == "selected"}'>
+    <span te-bind="s.title(s.item)"></span>
+  </div>
+  ```
+
+  ```
+  var prop = scope.$eval("s.some.property")
+  ```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Evaluation: 799 lines (0.86 BB)
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## 'Angular script'
+
+  - null aware
+  - doesn't parse all of JS ([ù̧͍̪̦̳̟͉̩ṇ̨̘̜͎̺̱͉͞i̛̻̩̠͟c҉̢̤̮̲̭̜̦͔̗͝ǫ̩̥̫̞͢ḏ̸̠̗e̝̖̩͔̺͈̺ͅ](https://github.com/angular/angular.js/pull/3848))
+  - not indented to be sandbox
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Security vs surprise
+
+  - Angular's parser will ignore lots of JS
+  - How secure? [Ish...](https://code.google.com/p/mustache-security/wiki/AngularJS)
+  - Don't use cute with untrusted Javascript (is it a good idea... ever?)
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Cute evaluation
+
+  - It's just Javascript: not a new language
+  - `new Function("return (" + src + ")",'s','scope')(this,this)`
+  - So `s.foo()` or `s.foo.bar["baz"] && s.ƒƒƒƒ` will work
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Directives
+
+  - Passed through to a compile
+  - Not with a *global* registry like Angular
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Directives
+
+  - Passed through to a compile
+  - Not with a *global* registry like Angular
+
+  ```
+  Cute.compile(someEl,directives)
+  ```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Controllers
+
+  - Passed through to directive
+  - Store object and add
+  - Again, can be local rather than global
+
+  ```
+  var controllersA = {}
+  // ... more controller definitions
+  var directivesA = []
+  Cute.registerDirectives(directivesA,controllersA)
+  var withAControllers = Cute.compile(someEl,directivesA)
+
+  var controllersB = {}
+  // ... more controller definitions
+  var directivesB = []
+  Cute.registerDirectives(directivesB,controllersB)
+  var withBControllers = Cute.compile(someEl,directivesB)
+  ```
+
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Design
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Cutting the magic
+
+  - No 'angular script'
+  - Pass directives + controllers directly
+  - Scope resolution clear 's.xxx'
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Bootstrapping
+
+  - No `ng-app` directive: magic
+  - Explicit bootstrap:
+
+  ```
+  var directives = []
+  var controllers = {}
+  // ... more controller definitions
+  Cute.registerDirectives(directives,controllers)
+  var rootAttach = Cute.compile(document.body,directives)
+
+  var rootScope = new Cute.Scope
+  rootAttach(rootScope)
+  rootScope.$apply()
+  ```
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Cutting the fat
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## What's the essence of Angular?
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## HTML compiler
+  
+  - Angular's big idea
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Accidents
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Module-system: the superflous
+
+  - DI: great for Java
+  - Unit tests need 1 level mocks
+  - Functional test: stub the boundaries
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Module-system: the bad
+
+  - 'It must be modular, I'm using modules'
+  - The 'controllers' module
+  - `$rootScope` as mutable global variable
+  - Singletons: 'but it said so in the docs'
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Module-system
+
+  - Just a wrapper
+  - Put your old class/module definitions in a factory, done
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Routing
+
+  - Why couple?
+  
+  ```
+  app.controller("top",function(scope) {
+    var someRouter = new SomeRouterLibrary()
+    // te-view listens for route events, pops in template + compiles
+    someRouter.on("route",function(route) {
+      var routeParams = slice(arguments,1)
+      scope.$broadcast.apply(scope,["route"].concat(routeParams))
+    })
+  })
+  ```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## HTTP
+  
+  - Why couple?
+
+  ```
+  var ajaxForCute = function(opts) {
+    if(opts.success) opts.success = Cute.wrap(ops.success)
+    if(opts.error) opts.error = Cute.wrap(ops.error)
+    return $.ajax(opts)
+  }
+  ```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Core can hold back progress
+
+  - A bad version in core will be more popular than good module
+  - Having no core, or asking for replacements would promote development
+  - `$resource`, `$router` both feature poor
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Promises
+
+  - A good idea
+  - Not necessary without periphery - `$http`, `$resource` etc
+  - Promises: 214 LOC (0.23 BB)
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Things I learned
+
+  - AngularJS has a big, great idea in scopes + controllers
+  - It broke some rules: uses `new Function`
+  - It has really, really hairy code
+  - Big API = complex, hard to grok code
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Next for cute
+
+  - Become a useable library? IE8+ or similar?
+  - Unit test vs angular?
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+# Any other questions?
+## @timruffles, @sidekicksrc
+</script></section>
+
+
+</div>
+</div>
+
+
+<!-- reveal -->
+<script src="reveal/lib/js/head.min.js"></script>
+<script src="reveal/js/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+
+    // Display controls in the bottom right corner
+    controls: false,
+
+    // Display a presentation progress bar
+    progress: true,
+
+    // Push each slide change to the browser history
+    history: true,
+
+    // Enable keyboard shortcuts for navigation
+    keyboard: true,
+
+    // Enable the slide overview mode
+    overview: true,
+
+    // Vertical centering of slides
+    center: false,
+
+    // Loop the presentation
+    loop: false,
+
+    // Change the presentation direction to be RTL
+    rtl: false,
+
+    // Number of milliseconds between automatically proceeding to the
+    // next slide, disabled when set to 0, this value can be overwritten
+    // by using a data-autoslide attribute on your slides
+    autoSlide: 0,
+
+    // Enable slide navigation via mouse wheel
+    mouseWheel: false,
+
+    // Apply a 3D roll to links on hover
+    rollingLinks: false,
+
+    // Transition style
+    transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+    dependencies: [
+        // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+        { src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+
+        // Interreveal/pret Markdown in <section> elements
+         { src: 'reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+        // Syntareveal/x highlight for <code> elements
+        { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+        // Zoom reveal/in and out with Alt+click
+        { src: 'reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        // Speakreveal/er notes
+        { src: 'reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        // Remotreveal/e control your reveal.js presentation using a touch device
+        // { src: 'reveal/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+    ]
+
+  });
+</script>
+</body>
+

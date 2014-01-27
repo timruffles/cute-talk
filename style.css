@@ -1,0 +1,40 @@
+.gallary img, .gallary .item {
+  float: left;
+  margin: 0.5rem;
+}
+
+.reveal a {
+  color: #fff;
+}
+.reveal .front .spaced {
+  margin-top: 2rem;
+  text-align: left;
+}
+.reveal .front a {
+  font-size: 3rem;
+  line-height: 1.25em;
+  display: block;
+}
+
+.reveal .pre {
+  white-space: pre;
+  text-align: left;
+  font-family: monospace;
+}
+.reveal .big {
+  font-size: 1.5em;
+  line-height: 1.5em;
+}
+
+.sub-title body {
+  background: #B2320B;
+}
+
+.reveal [data-state=sub-title] h2 {
+  text-align: center;
+}
+
+.pre.small {
+  font-size: 1.75rem;
+  line-height: 1.75rem;
+}
