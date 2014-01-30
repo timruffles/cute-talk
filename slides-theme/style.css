@@ -26,7 +26,7 @@ body {
 }
 
 .reveal h1 {
-  font-size: 4em;
+  font-size: 3.5em;
   margin-bottom: 3rem;
 }
 
@@ -34,6 +34,7 @@ body {
   font-size: 2.5em;
   margin-bottom: 1.5rem;
 }
+
 
 /* overrides */
 .reveal ul {
@@ -47,4 +48,8 @@ body {
   line-height: 1em;
   padding: 0.5em;
   max-height: none;
+}
+
+.reveal .has-image, .reveal .has-image p {
+  text-align: center;
 }

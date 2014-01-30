@@ -26,15 +26,24 @@
   line-height: 1.5em;
 }
 
-.sub-title body {
+.sub-title body, .bang body {
   background: #B2320B;
 }
 
 .reveal [data-state=sub-title] h2 {
   text-align: center;
 }
+.reveal [data-state=bang] h2 {
+  text-align: center;
+  font-size: 3em;
+}
 
 .pre.small {
   font-size: 1.75rem;
   line-height: 1.75rem;
+}
+
+code {
+  background: rgba(255,255,255,0.2);
+  padding: 0.15rem;
 }

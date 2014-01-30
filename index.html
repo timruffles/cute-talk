@@ -22,9 +22,12 @@
 [@timruffles](http://twitter.com/timruffles)
 [SidekickJS](https://www.sidekickjs.com)
 
-</div>
 
 
+</script></section>
+
+<section data-markdown class=has-image data-state=sub-title><script type="text/template">
+  <img class=center src=img/modules.png >
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -34,8 +37,33 @@
   - Design
 </script></section>
 
-<section data-markdown data-state=sub-title><script type="text/template">
+<section data-markdown><script type="text/template">
   ## A smaller Angular
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## What's Angular?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## HTML Enhanced for webapps
+
+<pre>
+&lt;div ng-controller=helloCtrl&gt;
+  &lt;h1&gt;{{ app.message }}&lt;/h1&gt;
+  &lt;input ng-model=app.message&gt;
+&lt;/div&gt;
+</pre>
+
+```javascript
+var app = angular.module("littleSketcher",[]);
+app.controller("helloCtrl",function($scope) {
+  $scope.app = {
+    message: "Hello Angular"
+  };
+});
+
+```
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -171,6 +199,27 @@ cute-0.1.js          591
 </script></section>
 
 <section data-markdown><script type="text/template">
+
+## Want
+
+<pre>
+&lt;div&gt;
+  &lt;h3&gt;Tree&lt;/h3&gt;
+  &lt;div te-include='&quot;tree&quot;'&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=tree&gt;
+  &lt;div te-bind='s.item.value'&gt;&lt;/div&gt;
+  &lt;button te-click='s.item.children.push(s.makeItem())'&gt;Add child&lt;/button&gt;
+  &lt;div te-repeat='s.item.children'&gt;
+    &lt;div te-include='&quot;tree&quot;'&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
   ## Stages
 
   1. For node, find directives
@@ -222,17 +271,17 @@ cute-0.1.js          591
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Expressions
+## Expressions
 
-  ```
-  <div te-style='{selected: s.item.state == "selected"}'>
-    <span te-bind="s.title(s.item)"></span>
-  </div>
-  ```
+<pre>
+&lt;div te-style='{selected: s.item.state == &quot;selected&quot;}'&gt;
+  &lt;span te-bind=&quot;s.title(s.item)&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;
+</pre>
 
-  ```
-  var prop = scope.$eval("s.some.property")
-  ```
+```
+var prop = scope.$eval("s.some.property")
+```
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -273,22 +322,52 @@ cute-0.1.js          591
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Directives
+## Directives
 
-  - Passed through to a compile
-  - Not with a *global* registry like Angular
+- Passed through to a compile
+- Not with a *global* registry like Angular
 
-  ```
-  Cute.compile(someEl,directives)
-  ```
+```javascript
+var directives = []
+Cute.registerDirectives(directives)
+
+var sayHi = Cute.components.setup("say-hi",{
+  link: function(scope,el) {
+    el.innerHTML = "hi"
+  }
+})
+directives.push(sayHi)
+
+Cute.compile(someEl,directives)
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Controllers
+
+- Passed through to directive
+- Store object and add
+
+```javascript
+var controllers = {
+  demo: function(scope) {
+    scope.counter = {value: 0}
+    scope.increment = function() {
+      scope.counter += 1
+    }
+  }
+}
+var directives = []
+
+Cute.registerDirectives(directives,controllers)
+var withControllers = Cute.compile(someEl,directives)
+```
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Controllers
+  ## Controllers are local
 
-  - Passed through to directive
-  - Store object and add
   - Again, can be local rather than global
 
   ```
@@ -320,22 +399,22 @@ cute-0.1.js          591
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Bootstrapping
+## Bootstrapping
 
-  - No `ng-app` directive: magic
-  - Explicit bootstrap:
+- No `ng-app` directive: magic
+- Explicit bootstrap:
 
-  ```
-  var directives = []
-  var controllers = {}
-  // ... more controller definitions
-  Cute.registerDirectives(directives,controllers)
-  var rootAttach = Cute.compile(document.body,directives)
+```
+var directives = []
+var controllers = {}
+// ... more controller definitions
+Cute.registerDirectives(directives,controllers)
+var rootAttach = Cute.compile(document.body,directives)
 
-  var rootScope = new Cute.Scope
-  rootAttach(rootScope)
-  rootScope.$apply()
-  ```
+var rootScope = new Cute.Scope
+rootAttach(rootScope)
+rootScope.$apply()
+```
 </script></section>
 
 <section data-markdown data-state=sub-title><script type="text/template">
@@ -381,42 +460,43 @@ cute-0.1.js          591
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Routing
+## Routing
 
-  - Why couple?
+- Why couple?
   
-  ```
-  app.controller("top",function(scope) {
-    var someRouter = new SomeRouterLibrary()
-    // te-view listens for route events, pops in template + compiles
-    someRouter.on("route",function(route) {
-      var routeParams = slice(arguments,1)
-      scope.$broadcast.apply(scope,["route"].concat(routeParams))
-    })
+```javascript
+app.controller("top",function(scope) {
+  var someRouter = new SomeRouterLibrary()
+  // te-view listens for route events, pops in template + compiles
+  someRouter.on("route",function(route) {
+    var routeParams = slice(arguments,1)
+    scope.$broadcast.apply(scope,["route"].concat(routeParams))
   })
-  ```
+})
+```
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## HTTP
-  
-  - Why couple?
+## HTTP
 
-  ```
-  var ajaxForCute = function(opts) {
-    if(opts.success) opts.success = Cute.wrap(ops.success)
-    if(opts.error) opts.error = Cute.wrap(ops.error)
-    return $.ajax(opts)
-  }
-  ```
+- Why couple?
+
+```
+var ajaxForCute = function(opts) {
+  if(opts.success) opts.success = Cute.wrap(ops.success)
+  if(opts.error) opts.error = Cute.wrap(ops.error)
+  return $.ajax(opts)
+}
+```
 </script></section>
 
 <section data-markdown><script type="text/template">
   ## Core can hold back progress
 
   - A bad version in core will be more popular than good module
-  - Having no core, or asking for replacements would promote development
+  - No core - or asking for replacements - would promote development
   - `$resource`, `$router` both feature poor
+  - The Backbone principle in handling of `sync` and `View`
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -429,6 +509,10 @@ cute-0.1.js          591
 
 <section data-markdown data-state=sub-title><script type="text/template">
   ## Things I learned
+</script></section>
+
+<section data-markdown ><script type="text/template">
+  ## ...about Angular
 
   - AngularJS has a big, great idea in scopes + controllers
   - It broke some rules: uses `new Function`
@@ -436,7 +520,7 @@ cute-0.1.js          591
   - Big API = complex, hard to grok code
 </script></section>
 
-<section data-markdown data-state=sub-title><script type="text/template">
+<section data-markdown><script type="text/template">
   ## Next for cute
 
   - Become a useable library? IE8+ or similar?
@@ -446,7 +530,7 @@ cute-0.1.js          591
 
 
 <section data-markdown><script type="text/template">
-# Any other questions?
+# Thanks!
 ## @timruffles, @sidekicksrc
 </script></section>
 
