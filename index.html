@@ -17,57 +17,217 @@
 <div class="slides">
 
 <section data-markdown class=front><script type="text/template">
-# Cute - a smaller Angular
+# Building a smaller Angular
 
 [@timruffles](http://twitter.com/timruffles)
 [SidekickJS](https://www.sidekickjs.com)
 
-
-
-</script></section>
-
-<section data-markdown class=has-image data-state=sub-title><script type="text/template">
-  <img class=center src=img/modules.png >
 </script></section>
 
 <section data-markdown><script type="text/template">
-  - What
-  - Why
-  - How
-  - Design
+  ## AngularJS is something special
+</script></section>
+
+<section data-markdown class=has-image><script type="text/template">
+  <img class=center src=img/trends.png >
+</script></section>
+
+<section data-markdown class=has-image><script type="text/template">
+  <img class=center src=img/trends-2.png >
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## A smaller Angular
+  ## It's also quite scary
+</script></section>
+
+<section data-markdown data-state=bang><script type="text/template">
+  
+  ## WTF?!
+
+  - transclusion
+  - scope
+  - service provider factories
+  - directives
+  - digest loop
+
+</script></section>
+
+<section data-markdown data-state=bang><script type="text/template">
+  ## SCARY MAGIC!
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## What's Angular?
+  ## Magic is a bad thing, I'd like to remove it
 </script></section>
 
 <section data-markdown><script type="text/template">
-## HTML Enhanced for webapps
+  ## Could we de-magic Angular?
+</script></section>
 
-<pre>
-&lt;div ng-controller=helloCtrl&gt;
-  &lt;h1&gt;{{ app.message }}&lt;/h1&gt;
-  &lt;input ng-model=app.message&gt;
-&lt;/div&gt;
-</pre>
+<section data-markdown class=sub-title><script type="text/template">
+  ## What makes AngularJS great?
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Not `$routes`
+
+  - old, boring
+  - pretty basic implementation of routes
+  - use UI-router instead
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Not `$http` or `$resource`
+
+  - old, boring
+  - pretty basic implementation of AJAX + RESTful helpers
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Not depedency injection or the module system
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## EH? DI sucks?!
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## No: Java makes DI hard
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## That's a benefit of dynamic languages, why lose?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## DI != containers
+
+- prototypes
+- good design + functions
 
 ```javascript
-var app = angular.module("littleSketcher",[]);
+function User() {}
+User.prototype = {
+  SomethingCreated: SomethingCreated
+}
+```
+
+```javascript
+function loadData() {
+  /* ... complex, horrible ajax ... */
+  showData(transformData(data))
+}
+function transformData(data) {
+  // easily testable function that just transforms input
+}
+function showData(el,data) {
+  // can pass in el and data and test simply
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Anyway, story for another time...
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## I do still `<3` Angular
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## What's good about Angular?
+</script></section>
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## HTML EXTENDED FOR WEB APPS!!!
+</script></section>
+
+<section>
+<h2>HTML enhanced for web-apps</h2>
+
+<script type='text/eg'>
+<div ng-controller=helloCtrl>
+  <h1>{{ app.message }}</h1>
+  <input ng-model=app.message>
+</div>
+</script>
+
+<pre><code class=javascript>var app = angular.module("yourApp",[]);
 app.controller("helloCtrl",function($scope) {
   $scope.app = {
     message: "Hello Angular"
   };
 });
+</code></pre>
+</section>
 
+<section data-markdown><script type="text/template">
+  ## But that's the magic bit!
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Am I being unfair?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Nope
+
+```javascript
+  // Insanity Warning: scope depth-first traversal
+  // yes, this code is a bit crazy, but it works
+  //  and we have tests to prove it!
+  if (!(next = (current.$$childHead || 
+      (current !== target && current.$$nextSibling)))) {
+    while(current !== target 
+      && !(next = current.$$nextSibling)) {
+      current = current.$parent;
+    }
+  }
+} while ((current = next));
 ```
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Reading copy of Angular
+  ## Solution: reading copy of Angular
+</script></section>
+
+
+<section data-markdown data-state=sub-title><script type="text/template">
+  ## Cute
+</script></section>
+
+<section data-markdown><script type="text/template">
+```javascript
+// 20 vs 86 lines
+$digest: function() {
+  var changed = false
+  var iterations = 20
+
+  do {
+    if(!iterations)
+      throw new Error(Scope.MAX_ITERATIONS_EXCEEDED)
+    iterations -= 1
+
+    var watcherChanged = this._watchers.reduce(
+      function(anyChanged,watcher) {
+      var watcherChanged = this._digestOne(watcher)
+      return anyChanged || watcherChanged
+    }.bind(this),false)
+
+    var childrenChanged = this._children.reduce(
+      function(anyChanged,child) {
+      var childChanged = child.$digest()
+      return anyChanged || childChanged
+    },false)
+
+    changed = watcherChanged || childrenChanged
+  } while(changed)
+}
+```
+</script></section>
+
+<section data-markdown class=has-image><script type="text/template">
+  ![sidekick code-quality analysis of angularjs](img/sidekick-angular.png)
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -101,6 +261,10 @@ SUM:         10193
   ## Angular squished into Backbone
 </script></section>
 
+<section data-markdown><script type="text/template">
+  ## A new metric unit: the BB
+</script></section>
+
 <section >
  <h2>BB: Unit of measure</h2>
   <div class=big>
@@ -125,22 +289,6 @@ http://cloc.sourceforge.net v 1.60
 File                code
 -------------------------
 ember-1.3.1.js     15825
-angular.js          7386
-backbone1.1.0.js     937
--------------------------
-</div>
-</section>
-
-<section>
- <h2>With cute</h2>
-
-<div class='pre small'>
-$ cloc  --by-file targets/
-http://cloc.sourceforge.net v 1.60
--------------------------
-File                code
--------------------------
-ember-1.3.1.js     15825
 angular-1.2.0.js    7386
 backbone1.1.0.js     937
 cute-0.1.js          591
@@ -149,27 +297,11 @@ cute-0.1.js          591
 </section>
 
 <section data-markdown><script type="text/template">
-  ## Cute will stay <= 1 BB
+  ## Cute aim: <= 1 BB
 </script></section>
 
 <section data-markdown data-state=sub-title><script type="text/template">
-  ## Why?
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Separate great core idea
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## For learning
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Library?
-</script></section>
-
-<section data-markdown data-state=sub-title><script type="text/template">
-  ## How
+  ## Let's write something
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -177,111 +309,83 @@ cute-0.1.js          591
 
   - compiler
   - scopes
-  - directives
-  - controllers
-</script></section>
-
-<section data-markdown data-state=sub-title><script type="text/template">
-  ## Compiling
-
-  - Identify extensions to DOM
-  - Apply them within a specific scope
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Requirements
-
-  - Recursive
-  - Control recursion - allow `ng-repeat` style abilities
-  - Capture DOM: 'transclusion'
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-
-## Want
-
-<pre>
-&lt;div&gt;
-  &lt;h3&gt;Tree&lt;/h3&gt;
-  &lt;div te-include='&quot;tree&quot;'&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class=tree&gt;
-  &lt;div te-bind='s.item.value'&gt;&lt;/div&gt;
-  &lt;button te-click='s.item.children.push(s.makeItem())'&gt;Add child&lt;/button&gt;
-  &lt;div te-repeat='s.item.children'&gt;
-    &lt;div te-include='&quot;tree&quot;'&gt;&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
-</pre>
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Stages
-
-  1. For node, find directives
-  1. Apply directives in priority order, stopping if required
-  1. Return a function to link directives to a specific scope
-
-  ### Inside link
-
-  1. Run each directive's linking function
-  1. If compilation hasn't stopped, compile and link children
-
 </script></section>
 
 <section data-markdown data-state=sub-title><script type="text/template">
   ## Scope
 </script></section>
 
-<section data-markdown><script type="text/template">
-  ## Allows watchers
+<section>
+<h2>Allows data-binding</h2>
 
-  ```javascript
-  scope.$watch(someExpressionOrFunction,function(now,was) {
-    // fires when the expression gives a different value
-  })
-  ```
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Watcher requirements
-
-  - knows when value changes
-  - storing values
-  - can be a string - compile/interpret
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Angular features
-
-  - deep equality
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Equality in JS
-
-  - HORRIBLE
-  - just edge cases, all the way down
-  - so: shallow equality + `.isEqual(to)`
-  - cheap watch, cheap clone, promotes good code
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Expressions
+<script type=text/eg>
+<div ng-controller=helloCtrl>
+  <h1>{{ app.message }}</h1>
+  <input ng-model=app.message>
+</div>
+</script>
 
 <pre>
-&lt;div te-style='{selected: s.item.state == &quot;selected&quot;}'&gt;
-  &lt;span te-bind=&quot;s.title(s.item)&quot;&gt;&lt;/span&gt;
-&lt;/div&gt;
+<code class=javascript>scope.$watch(someExpressionOrFunction,function(now,was) {
+  // fires when the expression's value changed
+});
+</code>
 </pre>
+</section>
 
+<section data-markdown><script type="text/template">
+  ## How do scopes work?
+</script></section>
+
+<section data-markdown data-state=bang><script type="text/template">
+  ## Digest loop!!1!
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## More simply
+
+  1. `$watch('something',handler)`
+  1. you tell scope of possible change: `$apply()` which calls `$digest()`
+  1. checks `_.equal(now,oldValue)`
+  1. if it's changed, calls `handler(now,was)`
+</script></section>
+
+<section data-markdown><script type="text/template">
+## So...
+
+```javascript
+var scope = new Cute.Scope
+scope.name = "TakeOff conf"
+// declare interest
+scope.$watch("s.name",function(now,was) {
+  console.log("Rebrand from '%s' to '%s'",was,now)
+})
+setTimeout(function() {
+  // tell scope, it may have changed
+  scope.$apply(function() {
+    scope.name = "TAKE OFF CONF!!!!!"
+  })
+})
 ```
-var prop = scope.$eval("s.some.property")
-```
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## Ill advised live coding in 3... 2... 1...
+</script>
+<aside>
+Reimplement child scopes
+- inherits from parent
+- setup correctly
+- pass on tree
+</aside>
+</section>
+
+<section data-markdown><script type="text/template">
+  ## If you're reading this, the demo gods smiled
+</script></section>
+
+<section data-markdown ><script type="text/template">
+  ## What Cute left out from scopes
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -293,146 +397,138 @@ var prop = scope.$eval("s.some.property")
 
   - null aware
   - doesn't parse all of JS ([ù̧͍̪̦̳̟͉̩ṇ̨̘̜͎̺̱͉͞i̛̻̩̠͟c҉̢̤̮̲̭̜̦͔̗͝ǫ̩̥̫̞͢ḏ̸̠̗e̝̖̩͔̺͈̺ͅ](https://github.com/angular/angular.js/pull/3848))
-  - not indented to be sandbox
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Security vs surprise
+## Cute evaluation
 
-  - Angular's parser will ignore lots of JS
-  - How secure? [Ish...](https://code.google.com/p/mustache-security/wiki/AngularJS)
-  - Don't use cute with untrusted Javascript (is it a good idea... ever?)
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Cute evaluation
-
-  - It's just Javascript: not a new language
-  - `new Function("return (" + src + ")",'s','scope')(this,this)`
-  - So `s.foo()` or `s.foo.bar["baz"] && s.ƒƒƒƒ` will work
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Directives
-
-  - Passed through to a compile
-  - Not with a *global* registry like Angular
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Directives
-
-- Passed through to a compile
-- Not with a *global* registry like Angular
+- It's just Javascript: not a new language
+- So `s.foo()` or `s.foo.bar["baz"] && s.ƒƒƒƒ` will work
 
 ```javascript
-var directives = []
-Cute.registerDirectives(directives)
-
-var sayHi = Cute.components.setup("say-hi",{
-  link: function(scope,el) {
-    el.innerHTML = "hi"
-  }
-})
-directives.push(sayHi)
-
-Cute.compile(someEl,directives)
+var getValue = 
+  new Function("return (" + src + ")",'s','scope')
+var value = getValue(this,this)
 ```
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Controllers
-
-- Passed through to directive
-- Store object and add
-
-```javascript
-var controllers = {
-  demo: function(scope) {
-    scope.counter = {value: 0}
-    scope.increment = function() {
-      scope.counter += 1
-    }
-  }
-}
-var directives = []
-
-Cute.registerDirectives(directives,controllers)
-var withControllers = Cute.compile(someEl,directives)
-```
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Controllers are local
-
-  - Again, can be local rather than global
-
-  ```
-  var controllersA = {}
-  // ... more controller definitions
-  var directivesA = []
-  Cute.registerDirectives(directivesA,controllersA)
-  var withAControllers = Cute.compile(someEl,directivesA)
-
-  var controllersB = {}
-  // ... more controller definitions
-  var directivesB = []
-  Cute.registerDirectives(directivesB,controllersB)
-  var withBControllers = Cute.compile(someEl,directivesB)
-  ```
 
 </script></section>
 
 <section data-markdown data-state=sub-title><script type="text/template">
-  ## Design
+## Let's write a compiler!!
+</script></section>
+
+<section>
+
+<h2>Want</h2>
+
+<script type=text/eg>
+<div>
+  <h3>Tree</h3>
+  <div te-include='"tree"'></div>
+</div>
+
+<div class=tree>
+  <div te-bind='s.item.value'></div>
+  <button te-click='s.item.children.push(s.makeItem())'>Add child</button>
+  <div te-repeat='s.item.children'>
+    <div te-include='"tree"'></div>
+  </div>
+</div>
+</script>
+
+</section>
+
+<section data-markdown><script type="text/template">
+## What do we need?
+
+- Identify directives on a node
+- For some extensions: pause and resume compilation
+- Apply them within a specific scope
+
+</script></section>
+
+<section>
+<h2>Example</h2>
+
+<ul>
+<li>We need to ensure the repeat captures the <code>te-href</code> and applies for each repeated item
+<li>Priority and ability to resume compilation
+</ul>
+
+<script type='text/eg'>
+<a te-repeat='s.items' te-href='s.item.url'>
+  <span te-bind='s.item.name'></span>
+</a>
+</script>
+</section>
+
+<section>
+<h2>Steps</h2>
+
+<ul>
+<li>Find directives on <code>&lt;a&gt;</code>, apply in order
+<li>Stop applying directives after <code>te-repeat</code>
+<li>Create a <code>transclude()</code> function for the <code>&lt;a&gt;</code> that restarts compilation
+<li>Inside <code>te-repeat</code> use our <code>transclude()</code> to create clones, with all directives applied
+</ul>
+
+<script type='text/eg'>
+<a te-repeat='s.items' te-href='s.item.url'>
+  <span te-bind='s.item.name'></span>
+</a>
+</script>
+</section>
+
+<section data-markdown><script type="text/template">
+  ## More live coding... are you mad?!
+</script>
+<aside>
+reimplement transcludeFn
+- clone node
+- replace + recompile with priority if element
+- compile children if not
+</aside>
+</section>
+
+<section data-markdown><script type="text/template">
+  ## Did it work?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+  ## AngularJS has a great idea in extending HTML
+</script></section>
+
+<section data-markdown ><script type="text/template">
+  ## Once you know, it's not that magic
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Cutting the magic
+  ## Next for cute
 
-  - No 'angular script'
-  - Pass directives + controllers directly
-  - Scope resolution clear 's.xxx'
+  - Become a useable library? IE8+ or similar?
+  - Unit test vs angular?
+  - Give me a hand
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+# Thanks!
+## @timruffles, @sidekicksrc
+### [github.com/timruffles/cute](https://github.com/timruffles/cute)
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Bootstrapping
-
-- No `ng-app` directive: magic
-- Explicit bootstrap:
-
-```
-var directives = []
-var controllers = {}
-// ... more controller definitions
-Cute.registerDirectives(directives,controllers)
-var rootAttach = Cute.compile(document.body,directives)
-
-var rootScope = new Cute.Scope
-rootAttach(rootScope)
-rootScope.$apply()
-```
+# Bonus: bitching about ng modules
 </script></section>
 
-<section data-markdown data-state=sub-title><script type="text/template">
-  ## Cutting the fat
-</script></section>
 
 <section data-markdown><script type="text/template">
-  ## What's the essence of Angular?
-</script></section>
+  ## DI
 
-<section data-markdown><script type="text/template">
-  ## HTML compiler
-  
-  - Angular's big idea
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Accidents
+  - make sure a module's dependencies can be switched out
+  - that's it 
+  - things that vary in program deliberately are constructor args: already solved
+  - more like `$http` etc
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -443,95 +539,101 @@ rootScope.$apply()
   - Functional test: stub the boundaries
 </script></section>
 
+<section data-markdown class=has-image><script type="text/template">
+  ![Module systems aren't needed for JS](img/modules.png)
+</script></section>
+
 <section data-markdown><script type="text/template">
   ## Module-system: the bad
-
-  - 'It must be modular, I'm using modules'
-  - The 'controllers' module
-  - `$rootScope` as mutable global variable
-  - Singletons: 'but it said so in the docs'
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Module-system
+## 'It must be modular, I'm using modules'
 
-  - Just a wrapper
-  - Put your old class/module definitions in a factory, done
-</script></section>
+- try lazy loading with the 'sub classes together' module style
 
-<section data-markdown><script type="text/template">
-## Routing
-
-- Why couple?
-  
 ```javascript
-app.controller("top",function(scope) {
-  var someRouter = new SomeRouterLibrary()
-  // te-view listens for route events, pops in template + compiles
-  someRouter.on("route",function(route) {
-    var routeParams = slice(arguments,1)
-    scope.$broadcast.apply(scope,["route"].concat(routeParams))
-  })
-})
+var controllers = angular.module("controllers",[]);
+controllers.controller("rootView",x);
+controllers.controller("unrelatedView",y);
+controllers.controller("heavyGraphView",z);
 ```
+
 </script></section>
 
 <section data-markdown><script type="text/template">
-## HTTP
+## 'Not global, because DI'
 
-- Why couple?
+- doesn't make it less horrible for app code if it's easier to test
+- don't use `$rootScope`
 
+```javascript
+app.controller("rootView",function($rootScope) {});
+app.controller("someView",function($rootScope) {});
+
+// have seen people suggest doing this
+app.service("UserService",function($http,$rootScope) {
+  $http(/* ... */)
+    .then(function(resp,data) {
+      $rootScope.user = data;
+    }) 
+});
 ```
-var ajaxForCute = function(opts) {
-  if(opts.success) opts.success = Cute.wrap(ops.success)
-  if(opts.error) opts.error = Cute.wrap(ops.error)
-  return $.ajax(opts)
+
+</script><aside>
+- temporal coupling, shared mutable variables, universal visibility
+</aside></section>
+
+<section data-markdown><script type="text/template">
+## The horror of `service()` vs `factory()`
+
+
+```javascript
+function ForService() {
+  this.functionality = function() {};
 }
+app.service("something",forService);
+
+function forFactory() {
+  return {functionality: function() {}};
+}
+app.factory("something",forFactory);
 ```
+
+</script><aside>
+- oh so I declare a service with `service()`?
+- both wrappers for `provide()`, fn passed to `service` is called with `new`
+</aside></section>
+
+<section data-markdown><script type="text/template">
+## Singletons
+
+- your class or module definitions are, and always have been, singletons
+- that's what you expose as services, not 'instancey' things
+- singletons === global variables === no
+
+```javascript
+// no, bleurgh singletons!
+app.service("user",function(other,instance,definitions) {
+  this.login = function() {};
+});
+
+// yes: nice reusable instances
+app.factory("User",function(Other,Class,Definitions) {
+  function User() {}
+  User.prototype.login = function() {};
+  return User
+});
+```
+
 </script></section>
 
 <section data-markdown><script type="text/template">
-  ## Core can hold back progress
+## KISS
 
-  - A bad version in core will be more popular than good module
-  - No core - or asking for replacements - would promote development
-  - `$resource`, `$router` both feature poor
-  - The Backbone principle in handling of `sync` and `View`
-</script></section>
+- good design + dynamic language = DI without containers
+- I still like Angular :)
 
-<section data-markdown><script type="text/template">
-  ## Promises
-
-  - A good idea
-  - Not necessary without periphery - `$http`, `$resource` etc
-  - Promises: 214 LOC (0.23 BB)
-</script></section>
-
-<section data-markdown data-state=sub-title><script type="text/template">
-  ## Things I learned
-</script></section>
-
-<section data-markdown ><script type="text/template">
-  ## ...about Angular
-
-  - AngularJS has a big, great idea in scopes + controllers
-  - It broke some rules: uses `new Function`
-  - It has really, really hairy code
-  - Big API = complex, hard to grok code
-</script></section>
-
-<section data-markdown><script type="text/template">
-  ## Next for cute
-
-  - Become a useable library? IE8+ or similar?
-  - Unit test vs angular?
-
-</script></section>
-
-
-<section data-markdown><script type="text/template">
-# Thanks!
-## @timruffles, @sidekicksrc
 </script></section>
 
 
@@ -592,7 +694,7 @@ var ajaxForCute = function(opts) {
         { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 
         // Syntareveal/x highlight for <code> elements
-        { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); showExamples(); } },
 
         // Zoom reveal/in and out with Alt+click
         { src: 'reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
@@ -605,6 +707,18 @@ var ajaxForCute = function(opts) {
     ]
 
   });
+</script>
+<script>
+  function showExamples() {
+    [].forEach.call(document.body.querySelectorAll("[type='text/eg']"),function(el) {
+      var rep = document.createElement("pre")
+      var code = document.createElement("code")
+      rep.appendChild(code)
+      code.innerText = el.innerHTML.trim()
+      el.parentElement.replaceChild(rep,el)
+      hljs.highlightBlock( rep );
+    })
+  }
 </script>
 </body>
 
