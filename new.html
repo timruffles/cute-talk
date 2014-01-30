@@ -143,7 +143,7 @@ function showData(el,data) {
 </script></section>
 
 <section>
-<h2>HTML Enhanced for web-apps</h2>
+<h2>HTML enhanced for web-apps</h2>
 
 <script type='text/eg'>
 <div ng-controller=helloCtrl>
@@ -191,8 +191,39 @@ app.controller("helloCtrl",function($scope) {
   ## Solution: reading copy of Angular
 </script></section>
 
+
 <section data-markdown data-state=sub-title><script type="text/template">
   ## Cute
+</script></section>
+
+<section data-markdown><script type="text/template">
+```javascript
+// 20 vs 86 lines
+$digest: function() {
+  var changed = false
+  var iterations = 20
+
+  do {
+    if(!iterations)
+      throw new Error(Scope.MAX_ITERATIONS_EXCEEDED)
+    iterations -= 1
+
+    var watcherChanged = this._watchers.reduce(
+      function(anyChanged,watcher) {
+      var watcherChanged = this._digestOne(watcher)
+      return anyChanged || watcherChanged
+    }.bind(this),false)
+
+    var childrenChanged = this._children.reduce(
+      function(anyChanged,child) {
+      var childChanged = child.$digest()
+      return anyChanged || childChanged
+    },false)
+
+    changed = watcherChanged || childrenChanged
+  } while(changed)
+}
+```
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -254,22 +285,6 @@ http://cloc.sourceforge.net v 1.60
 File                code
 -------------------------
 ember-1.3.1.js     15825
-angular.js          7386
-backbone1.1.0.js     937
--------------------------
-</div>
-</section>
-
-<section>
- <h2>With cute</h2>
-
-<div class='pre small'>
-$ cloc  --by-file targets/
-http://cloc.sourceforge.net v 1.60
--------------------------
-File                code
--------------------------
-ember-1.3.1.js     15825
 angular-1.2.0.js    7386
 backbone1.1.0.js     937
 cute-0.1.js          591
@@ -278,7 +293,7 @@ cute-0.1.js          591
 </section>
 
 <section data-markdown><script type="text/template">
-  ## Cute will stay <= 1 BB
+  ## Cute aim: <= 1 BB
 </script></section>
 
 <section data-markdown data-state=sub-title><script type="text/template">
